@@ -14,8 +14,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 public class Estado {
 
-	    private static final long serialVersionUID = 1782302043579345126L;
-
 	    @Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    @EqualsAndHashCode.Include

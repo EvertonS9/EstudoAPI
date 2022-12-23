@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.food.domain.exception.CozinhaNaoEncontradaException;
 import com.api.food.domain.exception.EntidadeNaoEncontradaException;
 import com.api.food.domain.exception.NegocioException;
 import com.api.food.domain.model.Restaurante;
@@ -55,9 +57,13 @@ public class RestauranteController {
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Restaurante adicionar(@RequestBody Restaurante restaurante){
-		return cadastroRestaurante.salvar(restaurante);
-	
+	public Restaurante adicionar(@RequestBody @Valid
+		Restaurante restaurante){
+		
+		try {return cadastroRestaurante.salvar(restaurante);
+		}catch (CozinhaNaoEncontradaException e) {
+			throw new NegocioException(e.getMessage());
+		}
 	}	
 	@PutMapping("/{restauranteId}")
 	public Restaurante atualizar(@PathVariable Long restauranteId,
@@ -65,7 +71,8 @@ public class RestauranteController {
 		
 			Restaurante restauranteAtual = cadastroRestaurante.buscarOuFalhar(restauranteId);
 					
-				BeanUtils.copyProperties(restaurante, restauranteAtual,"id");
+				BeanUtils.copyProperties(restaurante, restauranteAtual,
+						"id", "formaPagamento", "endereco", "dataCadastro", "produtos" );
 				try {
 					return cadastroRestaurante.salvar(restauranteAtual);
 				} catch(EntidadeNaoEncontradaException e) {
