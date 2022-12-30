@@ -1,54 +1,69 @@
 package com.api.food;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.hasSize;
 
-import javax.validation.ConstraintViolationException;
-
-import org.junit.jupiter.api.Test;
+import org.flywaydb.core.Flyway;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.api.food.domain.model.Cozinha;
-import com.api.food.domain.service.CadastroCozinhaService;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-class CadastroCozinhaIT {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource("/application-test.properties")
+public class CadastroCozinhaIT {
+	
+	@LocalServerPort
+	private int port;
 	
 	@Autowired
-	private CadastroCozinhaService cadastroCozinha;
+	private Flyway flyway;
 	
-	@Test
-	public void deveAtribuirId_QuandoCadastrarCozinhaComDadosCorretos() {
-		Cozinha novaCozinha = new Cozinha();
-		novaCozinha.setNome("Chinesa");
+	@org.junit.Before
+	public void setUp() {
+		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+		RestAssured.port = port;
+		RestAssured.basePath = "/cozinhas";
 		
-		novaCozinha = cadastroCozinha.salvar(novaCozinha);
-		
-		assertThat(novaCozinha).isNotNull();
-		assertThat(novaCozinha.getId()).isNotNull();
-		
-	}
-
-	@Test
-	public void deveFalhar_QuandoCadastrarCozinhaSemNome() {
-		Cozinha novaCozinha = new Cozinha();
-		novaCozinha.setNome(null);
-		
-		novaCozinha = cadastroCozinha.salvar(novaCozinha);
+		flyway.migrate();
 	}
 	
 	@Test
-	public void deveFalhar_QuandoExcluirCozinhaEmUso() {
-		cadastroCozinha.excluir(1L);
+	public void deveRetornarStatus200_QuandoConsultarCozinhas() {
+		given()
+			.accept(ContentType.JSON)
+		.when()
+			.get()
+		.then()
+			.statusCode(HttpStatus.OK.value());
 	}
 	@Test
-	public void deveFalhar_QuandoExcluirCozinhaInesxistente() {
-		cadastroCozinha.excluir(100L);
+	public void deveConter3Cozinhas_QuandoConsultarCozinhas() {
+		given()
+			.accept(ContentType.JSON)
+		.when()
+			.get()
+		.then()
+			.body("", hasSize(1));
 	}
 	
-
+	@Test
+	public void deveRetornarStatus201_QuandoCadastrarCozinha() {
+		given()
+			.body("{\"nome\": \"Chinesa\" }")
+			.contentType(ContentType.JSON)
+			.accept(ContentType.JSON)
+		.when()
+			.post()
+		.then()
+			.statusCode(HttpStatus.CREATED.value());
+	}
 }
