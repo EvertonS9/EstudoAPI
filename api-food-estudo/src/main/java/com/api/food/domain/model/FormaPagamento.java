@@ -1,5 +1,6 @@
 package com.api.food.domain.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,17 +10,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class FormaPagamento {
 
-    private static final long serialVersionUID = -6334498517156804884L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
-    private Long id;
-
-    
-    private String descricao;
+	@EqualsAndHashCode.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	@Column(nullable = false)
+	private String descricao;
+	
 }

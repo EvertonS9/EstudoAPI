@@ -1,5 +1,7 @@
 package com.api.food.model.input;
 
+import javax.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +9,7 @@ import lombok.Setter;
 @Getter
 public class CozinhaIdInput {
 	
+	@NotNull
 	private Long id;
 
 }

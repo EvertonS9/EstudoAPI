@@ -1,6 +1,6 @@
 package com.api.food.exceptionhandler;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,21 +13,22 @@ import lombok.Getter;
 @Getter
 @Builder
 public class Problem {
-	
+
 	private Integer status;
+	private OffsetDateTime timestamp;
 	private String type;
 	private String title;
 	private String detail;
-	
 	private String userMessage;
-	private LocalDateTime timeStamp;
-	private List<Field> fields;
+	private List<Object> objects;
 	
 	@Getter
 	@Builder
-	public static class Field {
+	public static class Object {
 		
 		private String name;
 		private String userMessage;
+		
 	}
+	
 }

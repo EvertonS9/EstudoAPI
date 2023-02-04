@@ -20,5 +20,14 @@ public interface RestauranteRepository extends CustomJpaRepository<Restaurante, 
 	@Query("from Restaurante r join fetch r.cozinha")
 	List<Restaurante> findAll();
 	
+	List<Restaurante> queryByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);
+	
+	List<Restaurante> consultarPorNome(String nome, @Param("id") Long cozinha);
+	
+	Optional<Restaurante> findFirstRestauranteByNomeContaining(String nome);
+	
+	List<Restaurante> findTop2ByNomeContaining(String nome);
+	
+	int countByCozinhaId(Long cozinha);
 	
 }

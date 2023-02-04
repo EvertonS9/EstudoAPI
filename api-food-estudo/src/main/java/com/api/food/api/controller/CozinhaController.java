@@ -4,8 +4,11 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,67 +20,73 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.food.api.assembler.CozinhaInputDisassembler;
+import com.api.food.api.assembler.CozinhaModelAssembler;
 import com.api.food.domain.model.Cozinha;
 import com.api.food.domain.repository.CozinhaRepository;
 import com.api.food.domain.service.CadastroCozinhaService;
+import com.api.food.model.CozinhaModel;
+import com.api.food.model.input.CozinhaInput;
 
 @RestController
-@RequestMapping("/cozinhas")
+@RequestMapping(value = "/cozinhas")
 public class CozinhaController {
-		
+
 	@Autowired
 	private CozinhaRepository cozinhaRepository;
 	
 	@Autowired
 	private CadastroCozinhaService cadastroCozinha;
 	
+	@Autowired
+	private CozinhaModelAssembler cozinhaModelAssembler;
+	
+	@Autowired
+	private CozinhaInputDisassembler cozinhaInputDisassembler;
+	
 	@GetMapping
-	public List<Cozinha> listar(){
-		return cozinhaRepository.findAll();
+	public Page<CozinhaModel> listar(@PageableDefault(size = 10) Pageable pageable) {
+		Page<Cozinha> cozinhasPage = cozinhaRepository.findAll(pageable);
+		
+		List<CozinhaModel> cozinhasModel = cozinhaModelAssembler
+				.toCollectionModel(cozinhasPage.getContent());
+		
+		Page<CozinhaModel> cozinhasModelPage = new PageImpl<>(cozinhasModel, pageable, 
+				cozinhasPage.getTotalElements());
+		
+		return cozinhasModelPage;
+	}
+	
+	@GetMapping("/{cozinhaId}")
+	public CozinhaModel buscar(@PathVariable Long cozinhaId) {
+		Cozinha cozinha = cadastroCozinha.buscarOuFalhar(cozinhaId);
+		
+		return cozinhaModelAssembler.toModel(cozinha);
 	}
 	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Cozinha adicionar(@RequestBody @Valid Cozinha cozinha) {
-		return cadastroCozinha.salvar(cozinha);
+	public CozinhaModel adicionar(@RequestBody @Valid CozinhaInput cozinhaInput) {
+		Cozinha cozinha = cozinhaInputDisassembler.toDomainObject(cozinhaInput);
+		cozinha = cadastroCozinha.salvar(cozinha);
+		
+		return cozinhaModelAssembler.toModel(cozinha);
 	}
 	
 	@PutMapping("/{cozinhaId}")
-	public Cozinha atualizar(@PathVariable Long cozinhaId,
-			@RequestBody Cozinha cozinha){
-			
-			Cozinha cozinhaAtual = cadastroCozinha.buscarOuFalhar(cozinhaId);
-			
-			BeanUtils.copyProperties(cozinha, cozinhaAtual, "id");
-			
-			return cadastroCozinha.salvar(cozinhaAtual);
-			
+	public CozinhaModel atualizar(@PathVariable Long cozinhaId,
+			@RequestBody @Valid CozinhaInput cozinhaInput) {
+		Cozinha cozinhaAtual = cadastroCozinha.buscarOuFalhar(cozinhaId);
+		cozinhaInputDisassembler.copyToDomainObject(cozinhaInput, cozinhaAtual);
+		cozinhaAtual = cadastroCozinha.salvar(cozinhaAtual);
+		
+		return cozinhaModelAssembler.toModel(cozinhaAtual);
 	}
-	
-	@GetMapping("/{cozinhaId}")
-	public Cozinha buscar(@PathVariable Long cozinhaId) {
-		return cadastroCozinha.buscarOuFalhar(cozinhaId);
-	}
-	
-//	@DeleteMapping("/{cozinhaId}")
-//	public ResponseEntity<Cozinha> remover(@PathVariable Long cozinhaId){
-//		try {
-//			cadastroCozinha.excluir(cozinhaId);
-//			
-//			return ResponseEntity.noContent().build();
-//			
-//		} catch(EntidadeNaoEncontradaException e) {
-//			return ResponseEntity.notFound().build();
-//		
-//		} catch (EntidadeEmUsoException e){
-//			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-//		}
-//
-//	}
 	
 	@DeleteMapping("/{cozinhaId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long cozinhaId){
-			cadastroCozinha.excluir(cozinhaId);
+	public void remover(@PathVariable Long cozinhaId) {
+		cadastroCozinha.excluir(cozinhaId);
 	}
+	
 }

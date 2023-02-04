@@ -4,20 +4,20 @@ import lombok.Getter;
 
 @Getter
 public enum ProblemType {
-	
-	MENSAGEM_INCOMPREENSIVEL("/mensagem-incompreensivel","Mensagem incompreensível"),
-	ENTIDADE_NAO_ENCONTRADA("/entidade-nao-encotrada" , "Entidade não encontrada"),
+
+	DADOS_INVALIDOS("/dados-invalidos", "Dados inválidos"),
+	ERRO_DE_SISTEMA("/erro-de-sistema", "Erro de sistema"),
+	PARAMETRO_INVALIDO("/parametro-invalido", "Parâmetro inválido"),
+	MENSAGEM_INCOMPREENSIVEL("/mensagem-incompreensivel", "Mensagem incompreensível"),
+	RECURSO_NAO_ENCONTRADO("/recurso-nao-encontrado", "Recurso não encontrado"),
 	ENTIDADE_EM_USO("/entidade-em-uso", "Entidade em uso"),
-	RESQUEST_ERROR("/request-error", "Request error"), PARAMETRO_INVALIDO("/paramet-error", "Paramet error"), 
-	RECURSO_NAO_ENCONTRADO("", ""),
-	ERRO_DE_SISTEMA("", ""), 
-	DADOS_INVALIDOS("", "");
+	ERRO_NEGOCIO("/erro-negocio", "Violação de regra de negócio");
 	
 	private String title;
 	private String uri;
 	
-	ProblemType(String path, String title){
-		this.uri = "https://api.food.estudo" + path;
+	ProblemType(String path, String title) {
+		this.uri = "https://apiFood.com.br" + path;
 		this.title = title;
 	}
 	
